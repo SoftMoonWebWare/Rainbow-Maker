@@ -12,10 +12,12 @@ A simple example of what this package can produce:
 Compare that with what most graphics development software can produce:
 <img src='RainbowGallery/oldstar1.png>
 
-The Rainbow-Maker can work with all kinds of standard geometrical shapes, shapes you define geometrically, as well as "random" shapes in a bitmap filter.
+The Rainbow-Maker can work with all kinds of standard geometrical shapes, shapes you define geometrically, as well as "random" shapes in a bitmap filter.  It can also do so much more with your sculpted gradient.
 <img src='RainbowGallery/7-13.png'>
 <img src='RainbowGallery/16of20.png'>
 <img src='RainbowGallery/bi-spiral star-flower.png'>
 <img src='RainbowGallery/candy mints.png'>
 <img src='RainbowGallery/rainbow starlet.png'>
 <img src='RainbowGallery/TheBigIsland.png'>
+
+More coming.....
