@@ -2,7 +2,7 @@ The Rainbow-Maker is a tool for producing "sculpted" gradients.  Typically, when
 
 The Rainbow-Maker was originally written in PHP 5.3 and required a server to produce the graphics.  It used an HTML "form" for a user-interface front-end, which sent the data to the server to be processed.  The PHP software itself was not well organized for one simple reason: it needed to be a single "PHP Class" to be hosed on <a href='https://www.phpclasses.org/package/7363-PHP-Create-transparent-gradient-images.html'>PHPClasses.org</a>.  That was before JavaScript supported graphics, and the MS Internet Exploder was king.  It was very unfriendly to use, but it worked.  You can download the original pakage from <a href='https://softmoon-webware.com/OpenSource.php'>SoftMoon-WebWare</a>.
 
-This repository will host the port of the original PHP Rainbow-Maker to JavaScript.
+This repository will host the port of the original PHP Rainbow-Maker to JavaScript.  It will have a User-Interface that is more friendly and allows the composition of complete graphics images; whereas the original PHP-based software only created a simgle gradient per "call" and you had to compose complex graphics in steps and feed the output of one step to the input (background-image) of the next step, and if you screwed up a step, you had to start over.
 
 A simple example of what this package can produce:
 <img src='RainbowGallery/mystar.png'>
