@@ -5,12 +5,12 @@ The Rainbow-Maker was originally written in PHP 5.3 and required a server to pro
 This repository will host the port of the original PHP Rainbow-Maker to JavaScript.
 
 A simple example of what this package can produce:
-<img src='RainbowGallery/mystar.png' />
-<img src='RainbowGallery/myotherstar.png' />
-<img src='RainbowGallery/mythirdstar.png' />
+<img src='RainbowGallery/mystar.png'>
+<img src='RainbowGallery/myotherstar.png'>
+<img src='RainbowGallery/mythirdstar.png'>
 
 Compare that with what most graphics development software can produce:
-<img src='RainbowGallery/oldstar1.png>
+<img src='RainbowGallery/oldstar1.png'>
 
 The Rainbow-Maker can work with all kinds of standard geometrical shapes, shapes you define geometrically, as well as "random" shapes in a bitmap filter.  It can also do so much more with your sculpted gradient.
 <img src='RainbowGallery/7-13.png'>
