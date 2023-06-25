@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name='author' content='Joe Golembieski, SoftMoon-WebWare'>
+<meta name='copyright' content='Copyright © 2023 Joe Golembieski, SoftMoon-WebWare'>
+<title>RainbowMaker Wizard</title>
+<base href="../">
+<link rel="icon" type="image/x-icon" href="images/SoftMoonWebWare.gif">
+<link rel='stylesheet' type='text/css' media="screen, projection" href='RainbowMaker/index.css'>
+<link rel='stylesheet' id='MasterColorPicker_stylesheet' type='text/css' media="screen, projection" href='color-pickers/SoftMoon-WebWare/MasterColorPicker2.css'>
+<script>
+const SoftMoon={};
+Object.defineProperties(SoftMoon, {
+	WebWare: {value: {}, enumerable: true},
+	loaded_palettes: {value: [], enumeralble: true}
+	});
+</script>
+<!--  These scripts are for the RainbowMaker itself as well as for the RainbowMaker UI and the MasterColorPicker.
+		You can use the RainbowMaker in your own creations without this HTML User Interface,
+		but you need these +++JS files, and the RGB_Calc for building Rainbows, for support  -->
+<!--  Note that +++JS scripts modify the JavaScript language itself  -->
+<script src='JS_toolbucket/+++JS/+++.js' defer></script><!--  !! ESSENTIAL !!  -->
+<script src='JS_toolbucket/+++JS/+++Math.js' defer></script><!--  !! ESSENTIAL !!  -->
+<script src='JS_toolbucket/+++JS/+++Canvas.js' defer></script><!--  !! ESSENTIAL !!  -->
+<script src='JS_toolbucket/SoftMoon-WebWare/+++input_type.js' defer></script><!--  supports RainbowMaestro & ColorSpaceLab & Gradientor & more  -->
+<script src='JS_toolbucket/SoftMoon-WebWare/UniDOM-2022.js' defer></script><!--  !! ESSENTIAL !!  -->
+<script src='JS_toolbucket/SoftMoon-WebWare/HTTP.js' defer></script><!--  ESSENTIAL for server version to auto-load/save palette & plan files; NOT for  file://  use  -->
+<script src='JS_toolbucket/SoftMoon-WebWare/RGB_Calc.js' defer></script><!--  !! ESSENTIAL !!  -->
+<script src="JS_toolbucket/SoftMoon-WebWare/Rigden-colorblind_websafe-table_interpolator.js" defer></script><!--  supports RainbowMaestro & MyPalette & Color-Space Lab  -->
+<script src="JS_toolbucket/skratchdot.Wickline-colorblind_converter.js" defer></script><!--  supports RainbowMaestro & MyPalette & Color-Space Lab  -->
+<script src='JS_toolbucket/SoftMoon-WebWare/Picker.js' defer></script><!--  !! ESSENTIAL for MasterColorPicker !!  -->
+<script src='JS_toolbucket/SoftMoon-WebWare/FormFieldGenie.js' defer></script><!--  !! ESSENTIAL !!  -->
+<script src="color-pickers/SoftMoon-WebWare/MasterColorPicker2.js" defer></script>
+
+<script src='RainbowMaker/RainbowMaker.js' defer></script><!--  this is the RainbowMaker class itself -->
+<script src='RainbowMaker/index.js' defer></script><!--  this is the human-interface-form manager…i.e. it manages this HTML page  -->
+</head>
+<body class='rainbow-mode'>
+<header></header>
+
+
+<main>
+<toolbar>
+	<toolset><tools>File</tools>
+		<fieldset>
+		<button type="button">Open</button><dialog>Choose a RainbowMaker plan to open: <input type='file' name='openFile' accept='.json,application/json'></dialog>
+		<button type="button">Save</button><dialog>Create a filename for this project: <input type='filename' name='saveFile'></dialog>
+		</fieldset>
+	</toolset>
+	<toolset><tools>View</tools>
+		<fieldset>
+		<fieldset onclick='document.body.swapOut$Class(/\b.+-mode\b/g, event.target.innerHTML);'>
+			<button type="button">dark-mode</button>
+			<button type="button">light-mode</button>
+			<button type="button">rainbow-mode</button>
+		</fieldset>
+		</fieldset>
+	</toolset>
+	<toolset><tools>☻Help☻</tools>
+		<fieldset onclick='if (event.target.type==="button")  helpFor(event.target.innerHTML)'>
+		<button type="button">getting started</button>
+		<button type="button">Gradients</button>
+		</fieldset>
+	</toolset>
+</toolbar>
+
+
+<workspace onclick='setTopSection(event.target.closest("section"));'>
+	<section id='rainbows'><h3>Gradient Manager</h3>
+
+
+		<!-- ===================  INSERT MasterColorPicker HERE  ==================== -->
+		<?php include '../color-pickers/SoftMoon-WebWare/MasterColorPicker2.htm' ?>
+
+
+		<fieldset class='gradient'><legend>Rainbow Gradient</legend>
+			<fieldset>
+				<label>Gradient name: <input type='text' name='gradient[0][name]'></label>
+				<label>Comments: <textarea name='gradient[0][comment]' rows='2' cols='28'></textarea></label>
+			</fieldset>
+			<p><label>¿soft-checkered background<input type='checkbox'
+				onchange='this.closest(".gradient").querySelector("gradient").classList.toggle("soft-checkered", this.checked)'>?</label>
+			<strong>&lArr;</strong> This is only for display purposes herein to indicate transparencies in the gradient itself.&nbsp;
+			The gradient itself has a diagonal-striped background that shows through transparancies in the selected “color”.&nbsp;
+			The “pixel-alpha” is applied to the gradient itself and shows through to the checkered background.</p>
+			<gradient onclick='addNewColor(event)'>
+				<pointer><svg version="1.1"
+						width="27" height="44"
+						xmlns="http://www.w3.org/2000/svg">
+					<polygon points="14,0  0,44  27,44" fill="white" stroke="black" stroke-width="1" onmouseover='highlightColor(event)' onmouseout='highlightColor(event)' onmousedown='dragColor(event)' />
+				</svg></pointer>
+			</gradient>
+			<p>Click on the gradient above to add a color-stop.</p>
+			<fieldset class='specs' onkeydown='enhanceGradientKeyboard(event)'>
+				<fieldset class='color' onmouseover='highlightColorPointer(event)' onmouseout='highlightColorPointer(event)'>
+					<label>stop<input class='stop' type='numeric' name='gradient[0][stop][0]' size='7' maxlength='7'
+						value="0%" default-value="" placeholder='% ‖ pixels' min='0' max='100%' units='%,pixels,px' auto-append-unit onchange='relocateColor(this, event.type)'></label>
+					<swatch></swatch>
+					<input class='RGBAb' type='MasterColorPicker' name='gradient[0][RGB+Ab][0]' swatch='this.parentNode.querySelector("swatch")' placeholder='color'>
+					<label>pixel-alpha<input class='Ap' type='numeric' name='gradient[0][Ap][0]' size='4' maxlength='7' placeholder="%"
+						value='' min='-100' max='100' allow-plus-sign units='%' auto-append-unit></label>
+				</fieldset>
+				<fieldset class='color' onmouseover='highlightColorPointer(event)' onmouseout='highlightColorPointer(event)'>
+					<label>stop<input class='stop' type='numeric' name='gradient[0][stop][1]' size='7' maxlength='7'
+						value="100%" default-value="" placeholder='% ‖ pixels' min='0' max='100%' units='%,pixels,px' auto-append-unit onchange='relocateColor(this, event.type)'></label>
+					<swatch></swatch>
+					<input class='RGBAb' type='MasterColorPicker' name='gradient[0][RGB+Ab][1]' swatch='this.parentNode.querySelector("swatch")' placeholder='color'>
+					<label>pixel-alpha<input class='Ap' type='numeric' name='gradient[0][Ap][1]' size='4' maxlength='7' placeholder="%"
+						value='' min='-100' max='100' allow-plus-sign units='%' auto-append-unit></label>
+				</fieldset>
+			</fieldset>
+		</fieldset>
+	</section>
+
+
+	<section id='tiles'><h3>Tile Manager</h3>
+		<div id='preview'>
+			<p>One canvas will be added here, with the tile in focus painted on.&nbsp;
+				This may also be a space for the user to size the graphic using the mouse, etc.&nbsp;
+				Users will also be able to create irregular vectored-shapes here for use with scuplted gradients and vectored graphics.</p>
+		</div>
+
+		<template id='tileheader'>
+			<label>Tile name: <input type='text' name='tile[0][name]'></label>
+			<label>Comments: <textarea name='tile[0][comment]' rows='2' cols='28'></textarea></label>
+		</template>
+		<template id='tiledata'>
+			<fieldset class='scaling'>
+				<label>¿<input type='checkbox' name='tile[0][fitto]' value='true'>
+					fit to this?<note>¿include this tile when figuring overall image dimensions?</note></label>
+				<label>¿<input type='checkbox' name='tile[0][scalable]' value='true'>
+					scalable?<note>¿resample (resize) this tile’s content according to the master scale?</note></label>
+				<label>¿<input type='checkbox' name='tile[0][scale_placement]' value='true'>
+					scale placement?<note>according to the master scale</note></label>
+				<label>¿<input type='checkbox' name='tile[0][scale_margin]' value='true'>
+					scale margin?<note>according to the master scale</note></label>
+			</fieldset>
+			<table onchange='if (event.target.type==="checkbox")  centerPlacement(event.target)'>
+				<caption>placement</caption>
+				<tr><th>&nbsp;</th><th>center</th><th>pixels</th><th>┼<note>calculated from graphic center</note></th><th>☼<note>calculated from graphic edge</note></th></tr>
+				<tr><th>left</th>
+						<td><label>→<input type='checkbox' name='tile[0][place][left]' title='auto center' value='center'>←</label></td>
+						<td><input type='text' name='tile[0][place][left]' value="0" size='3' maxlength='6' onkeyup='charFilter(this)' onblur='charFilter(this, flagFinal)'></td>
+						<td><input type='radio' name='tile[0][place][origin][left]' value='center' title='from graphic center'></td>
+						<td><input type='radio' name='tile[0][place][origin][left]' value='edge' title='from graphic edge' checked='checked'></td>
+				</tr>
+				<tr><th>top</th>
+						<td><label>↓<input type='checkbox' name='tile[0][place][top]' title='auto center' value='center'>↑</label></td>
+						<td><input type='text' name='tile[0][place][top]' value="0" size='3' maxlength='6' onkeyup='charFilter(this)' onblur='charFilter(this, flagFinal)'></td>
+						<td><input type='radio' name='tile[0][place][origin][top]' value='center' title='from graphic center'></td>
+						<td><input type='radio' name='tile[0][place][origin][top]' value='edge' title='from graphic edge' checked='checked'></td>
+				</tr>
+			</table>
+			<table><caption>margin</caption>
+				<tr><th>&nbsp;</th><th>pixels</th><th>┼<note>calculated from graphic center</note></th><th>☼<note>calculated from graphic edge</note></th></tr>
+				<tr><th>left</th>
+						<td><input type='text' name='tile[0][margin][left]' value="0" size='3' maxlength='6' onkeyup='charFilter(this)' onblur='charFilter(this, flagFinal)'></td>
+						<td><input type='radio' name='tile[0][margin][origin][left]' value='center' title='from graphic center'></td>
+						<td><input type='radio' name='tile[0][margin][origin][left]' value='edge' title='from graphic edge' checked='checked'></td>
+				</tr>
+				<tr><th>top</th>
+						<td><input type='text' name='tile[0][margin][top]' value="0" size='3' maxlength='6' onkeyup='charFilter(this)' onblur='charFilter(this, flagFinal)'></td>
+						<td><input type='radio' name='tile[0][margin][origin][top]' value='center' title='from graphic center'></td>
+						<td><input type='radio' name='tile[0][margin][origin][top]' value='edge' title='from graphic edge' checked='checked'></td>
+				</tr>
+				<tr><th>right</th>
+						<td><input type='text' name='tile[0][margin][right]' value="0" size='3' maxlength='6' onkeyup='charFilter(this)' onblur='charFilter(this, flagFinal)'></td>
+						<td><input type='radio' name='tile[0][margin][origin][right]' value='center' title='from graphic center'></td>
+						<td><input type='radio' name='tile[0][margin][origin][right]' value='edge' title='from graphic edge' checked='checked'></td>
+				</tr>
+				<tr><th>bottom</th>
+						<td><input type='text' name='tile[0][margin][bottom]' value="0" size='3' maxlength='6' onkeyup='charFilter(this)' onblur='charFilter(this, flagFinal)'></td>
+						<td><input type='radio' name='tile[0][margin][origin][bottom]' value='center' title='from graphic center'></td>
+						<td><input type='radio' name='tile[0][margin][origin][bottom]' value='edge' title='from graphic edge' checked='checked'></td>
+				</tr>
+			</table>
+		</template>
+
+		<div id='tiletypes'>
+		<details id='sculptures'><summary>Sculpted Gradients</summary>
+			<fieldset class='tile'><legend>Sculpted Tile</legend>
+				<fieldset template='tileheader'></fieldset>
+				<fieldset class='sculptedRainbow specs'><legend>Sculpted Rainbow filled shape</legend>
+					<label class='fill'>fill: <select name='tile[0][fill]'>
+						<option selected='selected'>Gradient 1</option>
+					</select></label>
+
+					<ul onclick='if (event.target.type==="radio")  setStyle(getShape(event.target));'>
+					<li><label><input type='radio' name='tile[0][shape]' value='circle'>circle</label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='ellipse'>ellipse</label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='complex'>complex<note>&nbsp;—from simple ellipses to complex flowers</note></label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='flower'>flower<note>&nbsp;—epicycloidic</note></label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='superstar'><select name='tile[0][superstar]'
+						onclick='this.previousSibling.checked=true; this.previousSibling.onclick(); var s=this; setTimeout(function() {s.focus();}, 1);'
+						onchange='this.previousSibling.checked=true; this.previousSibling.onclick();'>
+						<option>starlet</option>
+						<option>star☼1</option>
+						<option>star☼2</option>
+						<option>star☼3</option>
+						<option>star☼4</option>
+						<option>star☼5</option>
+						</select><note>&nbsp;—complex “superstars” that twist and shimmer</note></label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='star'>star</label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='polygon'>polygon<note>&nbsp;—all sides &amp; angles equal (h/w=1 : regular polygon)</note></label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='polygonic'><select name='tile[0][irregularPolygon]'
+					onclick='this.previousSibling.checked=true; this.previousSibling.onclick(); var s=this; setTimeout(function() {s.focus();}, 1);'
+					onchange='this.previousSibling.checked=true; this.previousSibling.onclick();'>
+							<!-- irregular polygon “options” go here -->
+						</select><note>&nbsp;—custom sided and user–defined (irregular polygons)</note></label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='fountain'>fountain</label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='basic'>basic–block</label></li>
+					<li><label><input type='radio' name='tile[0][shape]' value='split'>split–block</label></li>
+					<li><fieldset><label><input type='radio' name='tile[0][shape]' value='mask'>user mask<note>—bright foreground on near–black background</note></label>
+					<fieldset class='masks'><legend>mask file</legend>
+						<label>¿<input type='checkbox' name='tile[0][mask][scalable]' value='true'>
+						scalable?<note>¿resample (resize) this image according to the master scale?</note></label>
+						<input type='file' name='tile[0][mask][file]' accept='image/png,image/gif,image/jpeg'></fieldset></fieldset></li>
+					</ul>
+
+          <!-- ∠ -->
+					<fieldset class='rotate'><legend>rotation ∡angles<note><table>
+							<caption>Angle Units</caption>
+								<tr><th>degrees (360)</th></tr>
+									<tr><td>deg</tr></td>
+									<tr><td>°</tr></td>
+								<tr><th>radians (2π ≈6.2831853)</th></tr>
+									<tr><td>rad</tr></td>
+									<tr><td>ᴿ</tr></td>
+									<tr><td>ᶜ</tr></td>
+								<tr><th>gradians (400)</th></tr>
+									<tr><td>grad</tr></td>
+									<tr><td>ᵍ</tr></td>
+								<tr><th>percent of a turn (100)</th></tr>
+									<tr><td>%</tr></td>
+								<tr><th>turn (1)</th></tr>
+									<tr><td>turn</tr></td>
+									<tr><td>●</tr></td>
+							</table></note></legend>
+						<dl><dt>+∡</dt> <dd>clockwise</dd> <dt>−∡</dt> <dd>counter–clockwise</dd></dl>
+						<label>graphic<note>∡ of x–y axes</note><input type='numeric' name='tile[0][rotate][graph]' size='7' maxlength='7' value='0°' units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit></label>
+						<label>slices<note>∡ around x–y axes</note><input type='numeric' name='tile[0][rotate][pie_slices]' size='7' maxlength='7' value='0°' units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit></label>
+						<label>spiral<note>∡ around x–y axes</note><input type='numeric' name='tile[0][spiral][rotate]' size='7' maxlength='7' value='0°' units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit></label>
+						<label>points<note>∡ around x–y axes</note><input type='numeric' name='tile[0][rotate][sectors_1]' size='7' maxlength='7' value='0°' units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit></label>
+					</fieldset>
+					<fieldset class='superstars' disabled><legend>superstars</legend>
+						<label>pinwheel<note>percent of point</note><input type='numeric' name='tile[0][rotate][pinwheel]' size='4' maxlength='7' value='100%' units='%' auto-append-unit></label>
+						<fieldset class='star-twist'><legend>twisting stars</legend>
+							<label>twist<note>percent of point</note><input type='numeric' name='tile[0][rotate][twist][amount]' size='4' maxlength='7' value='0%' units='%' auto-append-unit></label>
+							<label>depth<note>from edge of star inward</note><input type='numeric' name='tile[0][rotate][twist][depth]' size='4' maxlength='7' value='100%' units='%' auto-append-unit></label>
+							<label>extent<note>from center of star outward<br>(type <kbd><span>~</span></kbd> for the ∞ Infinity symbol)</note><input type='numeric' name='tile[0][rotate][twist][extent]' size='4' maxlength='7' max='∞' value='∞' units='%' auto-append-unit></label>
+						</fieldset>
+						<fieldset class='star-shimmer'><legend>shimmering stars</legend>
+							<label>shimmer<note>percent of point</note><input type='numeric' name='tile[0][rotate][shimmer][amount]' size='4' maxlength='7' min='-100' max='100' value='0%' units='%' auto-append-unit></label>
+							<label>wiggles<note>number of shimmers</note><input type='numeric' name='tile[0][rotate][shimmer][wiggles]' size='4' maxlength='7' min='1' step='1' value='2'></label>
+							<label>expansion<note>percent of ‘natural’</note><input type='numeric' name='tile[0][rotate][shimmer][expand]' size='4' maxlength='7' max='∞' value='100%' units='%' auto-append-unit></label>
+							<label>depth<note>from edge of star inward</note><input type='numeric' name='tile[0][rotate][shimmer][depth]' size='4' maxlength='7' min='-∞' max='100' value='100%' units='%' auto-append-unit></label>
+							<label>extent<note>from center of star outward<br>(type <kbd><span>~</span></kbd> for the ∞ Infinity symbol)</note><input type='numeric' name='tile[0][rotate][shimmer][extent]' size='4' maxlength='7' max='∞' value='∞' units='%' auto-append-unit></label>
+						</fieldset>
+					</fieldset>
+
+					<fieldset class='extend'><legend>¿ extend colorband ?</legend>
+						<label><input type='radio' name='tile[0][extend][doso]' value='false' onchange='this.parentNode.lastElementChild.disable(true);' checked="checked">No</label>
+						<label>reflect<input type='radio' name='tile[0][extend][doso]' value='reflect' onchange='this.parentNode.lastElementChild.disable(false);'></label>
+						<label>repeat<input type='radio' name='tile[0][extend][doso]' value='repeat' onchange='this.parentNode.lastElementChild.disable(false);'></label>
+						<label><input type='numeric' name='tile[0][extend][times]' size='4' maxlength='7' max='∞' step='1' value='∞'>times<note>type <kbd><span>~</span></kbd> for the ∞ Infinity symbol</note></label>
+					</fieldset>
+
+					<fieldset class='spiral'><legend>apply colorband</legend>
+						<label><input type='checkbox' name='tile[0][reverse]' value='true'>in reverse</label>
+						<label><input type='radio' name='tile[0][spiral][doso]' value='' onchange='setSpiral(this)' checked="checked">radially</label>
+						<label><input type='radio' name='tile[0][spiral][doso]' value='spiral' onchange='setSpiral(this)'>conic spiral:</label>
+						<fieldset>
+						<label>sectors<input type='numeric' name='tile[0][spiral][sectors]' size='4' maxlength='7' min='1' step='1' value='1'></label>
+						<label>twist rate<input type='numeric' name='tile[0][spiral][factor]' size='4' maxlength='7' value='100%' units='%' auto-append-unit><note>percent of sector</note></label>
+						<label><input type='radio' name='tile[0][spiral][twist]' value='clockwise' checked="checked">clockwise</label>
+						<label><input type='radio' name='tile[0][spiral][twist]' value='counter-clockwise'>counter–clockwise</label>
+						<label>¿<input type='checkbox' name='tile[0][spiral][squish]' value='true'>squish to h/w ratio?</label>
+						</fieldset>
+					</fieldset>
+
+					<fieldset class='hw'><legend>height/width</legend>
+						<label>size<input type='numeric' name='tile[0][hw][size]' size='4' maxlength='7' min='1' value='100%' units='pixels,px,%' auto-append-unit><note>radial dimension: •pixels, or •percent % of ColorBand</note></label>
+						<label><input type='radio' name='tile[0][hw][sizeTo]' value='shape' checked="checked">size to shape</label>
+						<label><input type='radio' name='tile[0][hw][sizeTo]' value='radius' title='best for (super)novas, nebulae, quasars'>size to radius</label>
+						<label>ratio<note>of sculpture</note><input type='text' name='tile[0][hw][ratio_1]' size='4' maxlength='7' value='100%' units='%' auto-append-unit></label>
+						<label>swell<input type='numeric' name='tile[0][hw][swell]' size='4' maxlength='7' value='100%' units='%' auto-append-unit></label>
+						<label>petals<input type='numeric' name='tile[0][hw][sectors_1]' size='4' maxlength='4' min='2' step='1' value='7'></label>
+						<label>depth<input type='numeric' name='tile[0][hw][depth]' size='4' maxlength='7' value='61.8%' units='%' auto-append-unit></label>
+						<label>span<input type='numeric' name='tile[0][hw][span]' size='4' maxlength='7' value='100%' units='%' auto-append-unit></label>
+					</fieldset>
+
+					<fieldset class='pie'><legend>pie slices:&nbsp; by # or ∡angle<note>∡Angles are Cartesian, calculated from 3:00, counter–clockwise<br>(¡slices may also all be rotated!)<br>See “rotation ∡angles” for a list of angle units.</note></legend>
+						<label>¿<input type='checkbox' name='tile[0][hw][pie_slices][squish]' value='true' >squish to h/w ratio?</label>
+						<table onfocusin='PieSliceGenie.tabbedOut=false' onkeydown='PieSliceGenie.catchTab(event)' onfocusout='PieSliceGenie.popNewField(this.parentNode.parentNode)'>
+						<tr><th>↓←</th><th>slice #</th><th>of total</th><th></th></tr>
+						<tr><th></th><th>from∡ →</th><th>→ to∡</th><th></th></tr>
+						<tr class='by-number'><td><input type='checkbox' checked name='tile[0][hw][pie_slices][0][sliceFlag]' value='true' onchange='this.closest("tr").classList.toggle("by-number",this.checked);' title='by slice (numbered) of (total)'></td>
+						<td>
+							<input class='by-number' type='numeric' name='tile[0][hw][pie_slices][0][number]' value='' size='7' maxlength='7' min='1' max='1000' step='1'>
+							<input class='by-angle'  type='numeric' name='tile[0][hw][pie_slices][0][from]' value='' size='7' maxlength='7' units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit>
+						</td>
+						<td>
+							<input class='by-number' type='numeric' name='tile[0][hw][pie_slices][0][of]' value='' size='7' maxlength='7' min='1' max='1000' step='1'>
+							<input class='by-angle'  type='numeric' name='tile[0][hw][pie_slices][0][to]' value='' size='7' maxlength='7' units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit>
+						</td>
+						<td class='GenieOptions'>
+							<button type='button' onclick='PieSliceGenie.deleteField(this.parentNode.parentNode)'>←delete</button>
+						</td>
+						</tr>
+						</table>
+					</fieldset>
+				</fieldset><!--  close  class='specs'  -->
+				<fieldset template='tiledata'></fieldset>
+			</fieldset>
+		</details>
+
+		<details id='mosaics'><summary>Mosaics</summary>
+			<fieldset class='tile'><legend>Mosaic Tiler</legend>
+				<fieldset template='tileheader'></fieldset>
+				<fieldset class='mosaic specs'>
+					<label>style <select name='tile[0][mosaic][style]' onchange='setMosaic(this)'>
+					<option>nova</option>
+					<option>supernova</option>
+					<option>nebula</option>
+					<option>quasar</option>
+					<option>hub</option>
+					<option>wheel</option>
+					<option>spokes</option>
+					<option>fan</option>
+					<option>spiral</option>
+					<option>vortex</option>
+					<option>grid</option>
+					</select></label>
+					<fieldset><legend>tile overlap</legend>
+						<label><input type='radio' name='tile[0][mosaic][overlap]' value='clockwise' checked="checked">clockwise</label>
+						<label><input type='radio' name='tile[0][mosaic][overlap]' value='counter-clockwise'>counter–clockwise</label>
+					</fieldset>
+					<fieldset>
+						<label>rotate<note>x–y axes</note><input type='numeric' name='tile[0][mosaic][rotate]' size='7' maxlength='7' value='0°'  units='°,deg,rad,ᶜ,ᴿ,grad,ᵍ,%,turn,●' auto-append-unit></label>
+						<label>sectors<input type='numeric' name='tile[0][mosaic][sectors]' size='4' maxlength='4' value='7' min='2' step='1'></label>
+						<label>height/width ratio<input type='numeric' name='tile[0][mosaic][hwRatio]' size='4' maxlength='7' value='100%' units='%' auto-append-unit></label>
+						<label>size<note>of graphic elements <span>(1% +)</span></note><input type='numeric' name='tile[0][mosaic][size]' size='4' maxlength='7' value='50%' default-value='50%' min='1' units='%' auto-append-unit></label>
+						<label>shift<note>graphic elements in/out <span>(-98% +)</span></note><input type='numeric' name='tile[0][mosaic][shift]' size='4' maxlength='7' value='0%' default-value='0%' min='-98' units='%' auto-append-unit></label>
+					</fieldset>
+					<fieldset><legend>Member Tiles:</legend>
+						<select class='tilelist' name='tile[0][mosaic][tiles][0]'></select>
+					</fieldset>
+				</fieldset><!--  close  class='mosaic specs'  -->
+				<fieldset template='tiledata'></fieldset>
+			</fieldset>
+		</details>
+
+		<details id='images'><summary>Images</summary>
+			<fieldset class='tile'><legend>Image Tile</legend>
+				<fieldset template='tileheader'></fieldset>
+				<fieldset class='image specs'><legend>Image</legend>
+					<label>Image File:
+						<input type='file' name='tile[0][image][file]' accept='image/png,image/gif,image/jpeg'></label>
+					<fieldset class='alpha'><legend>Image Opacity/Transparancy (alpha) Composition:</legend>
+						<label><input type='radio' name='tile[0][image][composite]' value='source-over' checked="checked">
+						blend image into overall canvas</label>
+						<label><input type='radio' name='tile[0][image][composite]' value='copy'>
+						retain image alpha — replace underlying pixels in canvas</label>
+					</fieldset>
+					<label class='alpha'>Master Opacity:<input type='numeric' name='tile[0][image][opacity]' size='4' maxlength='7'
+						value='100%' default-value='100%' min='0' max='100' units='%' autoAppendUnit></label>
+				</fieldset>
+				<fieldset template='tiledata'></fieldset>
+			</fieldset>
+		</details>
+
+		<details id='drawings'><summary>Drawings</summary>
+			<p>Soon you will be able to create basic vector graphics using the native
+			JavaScript™ drawing tools.&nbsp;
+			This interface will allow you to easily create regular polygons, stars, circles, ellipses, etc.,
+			as well as user-created shapes using the mouse.&nbsp;
+			They can be filled with the standard fill methods;
+			simple standard gradient (linear, circular radial, circular conic)
+			support may be included (¿who knows if time permits?)
+			or use another Tile’s graphics as the fill.</p>
+		</details>
+		</div><!-- close id='tiletypes'  -->
+	</section>
+
+
+
+	<section id='canvas'><h3>Canvas Manager</h3>
+		<p>a canvas will go here.</p>
+			<!-- multiple canvases will be added here, where the user can move them around -->
+			<!-- they will not composite the alpha properly when overlayed, but it is a “preview” -->
+			<!-- ========== OR ========== -->
+			<!-- one canvas will be added here, with all the tiles painted on and the alpha-values properly composited -->
+	</section>
+</workspace>
+</main>
+
+
+<aside id='help'>
+<h3>☻Help☻ for RainbowMaker <button type='button' onclick='this.closest("#help").classList.remove("active")' title='close ☻Help☻'>X</button></h3>
+<help>
+	<p id='help_for_getting started'>To use the RainbowMaker, first start with building your Gradients’ specifications;
+	you can skip this step if you are only using the Mosaic-Tiler to tile pre-defined images or “drawings”.&nbsp;
+	Then create your Tiles’ specifications.&nbsp; Each Tile is an individual graphical element.&nbsp;
+	Then apply your Tiles to a canvas in a specified order.&nbsp;
+	Each Gradient and Tile must have a name that you specify, in order that you can refer to it in a later step.&nbsp;
+	For example, you create a Gradient and call it “<kbd>mygrad1</kbd>”,
+	then create a “Sculpted Gradient” Tile and call it “<kbd>mytile1</kbd>”.&nbsp;
+	In the Tile you create, you refer to “<kbd>mygrad1</kbd>” as the fill,
+	and in the canvas you create, you refer to “<kbd>mytile1</kbd>” as the Tile you want to apply to the canvas.&nbsp;
+	When specifying a Mosaic-Tile (a Tile built from other Tiles arranged in a possibly otherwise impossible pattern),
+	you also refer to other Tiles using their names.</p>
+
+	<h4 id='help_for_Gradients'>Building Gradients</h4>
+
+	<h5>True-Color <abbr title='versus'>vs.</abbr> Paletted</h5>
+	<p>RainbowMaker Gradients come in two different flavors.&nbsp;
+	When the RainbowMaker is applying your gradient to the canvas,
+	it “requests” a color from the Gradient at a specific point.&nbsp;
+	<dfn>True-Color Gradients</dfn> calculate the color at
+	each requested specific point individually at the moment they are requested,
+	and the gradient has “unlimited” color-points (limited only by the gamut of the hardware).&nbsp;
+	This creates the smoothest gradients in the images you design,
+	particualrly if they are very large; but it also slows the RainbowMaker
+	as it draws the graphic on the canvas.&nbsp;
+	<dfn>Paletted Gradients</dfn> have a limited number of colors-points,
+	and they are pre-calculated before the RainbowMaker draws the graphic.&nbsp;
+	Requested specific points that fall between the paletted color-points
+	get rounded to the closest color-point.&nbsp;
+	This is the fastest process when drawing the graphic,
+	but if the graphic is larger than the gradient, it can lead to color banding.&nbsp;
+	If you match the size of a Paletted Gradient to the size graphic you are creating,
+	you will typically have the best results.&nbsp;
+	Note that when creating your Sculpted Gradients, there is an option
+	to size the graphic as “size to gradient”.&nbsp;
+	If you are creating many graphics using the same Gradient,
+	and they vary greatly in size, it might be best to use a True-Color Gradient.&nbsp;
+	True-Color Gradients <em>only use percents</em> ( <kbd>%</kbd> ) as units for all stop points.&nbsp;
+	Paletted Gradients <em>use pixels (<kbd>pixels</kbd>, <kbd>px</kbd>) as a unit for the last stop point</em>
+	and this value is the number of color-points in the gradient.</p>
+	<h5>Gradient Stop Points</h5>
+	<p>With <strong>other</strong> graphic-develpoment software, gradients typically have no instrinsic size;
+	they may size to the graphic they fill; if they use “pixels” as a unit for a color-stop,
+	the gradient may have a fixed-form,
+	but the gradient may fill past the last pixel-stop with a solid color if the graphic is bigger,
+	or be cut-off if the graphic is smaller.&nbsp;
+	RainbowMaker Gradients also have no intrinsic size, but they are internally all percent-based:
+	they size to the graphic they fill, and will shrink or expand to fill the graphic as needed where needed.&nbsp;
+	RainbowMaker Gradient stop-points may be defined as a percent ( <kbd>%</kbd> ) of the total gradient length,
+	or defined in pixels (<kbd>pixels</kbd>, <kbd>px</kbd>).&nbsp;
+	If you use pixels for any stop-point, the <strong>last stop point must also be in pixels</strong>.
+	(note using pixels creates a “Paletted Gradient” as described previously)&nbsp;
+	The demo-gradient displayed in the User-Interface is a fixed-length and it will not match your pixel-length;
+	instead, as noted all stop-points get converted internally to percents.</p>
+	<p>If the first and last stop-points are not <kbd>0%</kbd> &amp; <kbd>100%</kbd> respectively,
+	“virtual” stop points are assumed at 0% &amp; 100% with colors that match your first and last colors, respectively.&nbsp;
+	That means that the gradient will be a solid color at the beginning and/or end
+	up to your first and/or last defined stop-points, respectively.</p>
+	<p>Stop-points may also be left blank.&nbsp;
+	In this case, they automatically center themselves between the previous and next stop-points;
+	multiple “blank” stop-points in a row spread evenly between defined previous and later stop points.&nbsp;
+	If the first and/or last stop-points are blank, they equate to <kbd>0%</kbd> &amp; <kbd>100%</kbd> respectively.</p>
+	<p>Stop-points may also be automatically offset from the previous or next stop-point.&nbsp;
+	That way you can adjust one stop-point to perfection and affect many in relation.&nbsp;
+	By prepending the stop-point value with a plus or minus ( <kbd>+ −</kbd> ) sign,
+	it becomes relatively offset from the previous or next point, respectively.</p>
+
+	<h5>Using the Alpha-channels:</h5>
+	<p>The RainbowMaker takes gradients to the next level and allows you more complete control over the alpha-channel.&nbsp;
+	You may specify <strong>both</strong> an <em>alpha-blend</em> opacity <strong>and</strong> an <em>alpha-pixel</em> opacity for every color you choose.&nbsp;
+	The <dfn>alpha-blend</dfn> opacity specifies the rate at which the color you choose for your gradient blends into the pre-existing color on the canvas:
+	as usual, a value of <kbd>100%</kbd> means the gradient-color is fully opaque and completely covers the canvas,
+	and a value of 0% is completely transparent and the canvas shows through unchanged.&nbsp;
+	Also as usual, if no alpha-blend rate is defined, it is assumed to be <kbd>100%</kbd>.
+	The <dfn>alpha-pixel</dfn> opacity specifies the alpha-value of the canvas pixel <strong>after</strong> the gradient-color has been applied to the canvas
+	(and blended into the canvas according to the alpha-blend rate).&nbsp;
+	<strong>If no alpha-pixel value is defined, the alpha-value of the canvas pixel is left unchanged.</strong>&nbsp;
+	This is where things can get tricky… … …There are 3 ways the alpha-pixel value can be applied.</p>
+	<ul>
+		<li>If the alpha-pixel rate has no positive/negative sign ( <kbd>+ −</kbd> ) it is applied directly and becomes the alpha-value of the pixel.</li>
+		<li>If the alpha-pixel rate has a positive sign (e.g. <kbd>+50%</kbd>) the <em>opacity</em> of the <strong>canvas-pixel</strong> is blended
+				by “adding” it into the alpha-pixel rate with the formula:
+				<code><var>Ac</var>= <var>Ap</var> + (1−<var>Ap</var>)×<var>Ac</var>×<var>Ab</var></code></li>
+		<li>If the alpha-pixel rate has a negative sign (e.g. <kbd>−50%</kbd>) the <em>transparency</em> of the <strong>canvas-pixel</strong> is blended
+				by “subtracting” it from the alpha-pixel <em>opacity</em> with the formula:
+				<code><var>Ac</var>= <var>Ap</var> − <var>Ap</var>×(1−<var>Ac</var>)×<var>Ab</var></code></li>
+	</ul>
+	<p>where the variables in the formulas have the meaning:</p>
+	<dl>
+		<dt><var>Ap</var></dt><dd>Alpha-pixel value of your gradient color</dd>
+		<dt><var>Ab</var></dt><dd>Alpha-blend value of your gradient color</dd>
+		<dt><var>Ac</var></dt><dd>Alpha value of the canvas pixel</dd>
+	</dl>
+	<p>The trick is that the colors you define in your gradient … um … grade from one color to the next.&nbsp;
+	The two adjacent color-stops must use the same formula, or the colors in the gradient <em>in-between</em>
+	the colors you specify at stop-points will have their alpha-pixel values applied directly
+	with no blending of the pre-existing canvas-alpha.&nbsp;
+	To overcome this complexity, simply create two adjacent color-stops with the
+	same stop-point &amp; same color, but different alpha-pixel formula specs.</p>
+</help>
+</aside>
+
+<footer></footer>
+</body>
+</html>
