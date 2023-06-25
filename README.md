@@ -20,6 +20,7 @@ Compare that with what most graphics development software can produce:
 
 The Rainbow-Maker can work with all kinds of standard geometrical shapes, shapes you define geometrically, as well as "random" shapes in a bitmap filter.  It can also do so much more with your sculpted gradient. All these sculpted gradient images were created with just a couple of simple steps in just a minute or two each....
 <img src='RainbowGallery/7-13.png'>
+with no copying, cutting, or pasting
 <img src='RainbowGallery/16of20.png'>
 <img src='RainbowGallery/bi-spiral star-flower.png'>
 <img src='RainbowGallery/candy mints.png'>
