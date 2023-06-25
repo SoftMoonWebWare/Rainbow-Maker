@@ -8,7 +8,7 @@ The Rainbow-Maker was originally written in PHP 5.3 and required a server to pro
 
 This repository will host the port of the original PHP Rainbow-Maker to JavaScript.  It will have an HTML User-Interface that is more friendly and allows the composition of complete graphics images; whereas the original PHP-based software only created a single gradient per "call" and you had to compose complex graphics in steps and feed the output of one step to the input (background-image) of the next step, and if you screwed up a step, you had to start over.
 
-The RainbowMaker will be cross-platform compatible and should work in any modern browser (FireFox, Chrome, Edge, Safari, Opera, etc.) on any operating system (MS-Windows, Apple-OS, Linux, etc.), with no executable software to install on your computer.
+The RainbowMaker will be cross-platform compatible and should work in any modern browser (FireFox, Chrome, Edge, Safari, Opera, etc.) on any operating system (MS-Windows, Apple-OS, Linux, etc.), with no executable software to install on your computer, and no server needed.  The new Rainbow-Maker HTML User-Interface can create graphics on the spot, and also save the "plans" for these graphics.  The underlying “RainbowMaker.js” will be a stand-alone tool (with a defined API) to integrate into your website that can generate on-the-fly graphics sized for the end-user's screen, and/or many large graphics to save internet bandwidth, using the "plans" you created with the UI (or even by hand).
 
 A simple example of what this package can produce:
 <img src='RainbowGallery/mystar.png'>
