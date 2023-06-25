@@ -1,0 +1,585 @@
+/*  RainbowMaker HTML interface  */
+
+	/*  why FireFox (¿and others?) wants to display the inner-content of a script tag within the body is beyond me.
+	 *  Never seen it before, doesn't happen when the SAME HTML fragment (MasterColorPicker) is included in another HTML page.
+	 *  The script runs just fine… why display the JavaScript code to the user also?  */
+script {
+	display: none;  /*doesn't work*/
+	width: 0;   /* these only make it display like it is position: absolute */
+	height: 0;  /*  and the width is maybe 10em-15em, and it overlays the following <input> tag  */
+	position: absolute;  /* so lets go with that, and... */
+	left: 1000%;
+	top: 1000%;   /* it works */
+}
+body {
+	--border-button: #808080;
+	--bordershadow-button: #404040;
+	--border-button-tools: #808080;
+	--bordershadow-button-tools: #404040;
+	--fore-text-kbd: white;    /* keyboard keys */
+	--back-text-kbd: #202040;
+	--border-kbd: #8080FF;        /* keyboard keys */
+	--border-kbd-shadow: #404080;
+}
+
+body.dark-mode {
+	--fore-text: white;
+	--back-text: black;
+	--fore-tools: white;
+	--back-tools: black;
+	--fore-help: white;
+	--back-help: black;
+	--gradient-special: white;
+	--tile-special: white;
+	--canvas-special: white;
+	--fore-highlight: white;
+	--back-highlight: #222222;
+	--fore-text-note: white;
+	--back-text-note: dimGray;
+	--border-tools: white;;
+	--border-section: white;
+	--border-gradient: white;
+	--border-gradient-specs: var(--gradient-special);
+	--border-tile-specs: var(--tile-special);
+	--border-note: white;
+	--fore-text-disabled: #BBBBBB;
+	--back-text-disabled: #444444;
+	--fore-button: white;
+	--back-button: #222222;
+	--fore-button-tools: white;
+	--back-button-tools: #333333;
+}
+body.light-mode {
+	--fore-text: black;
+	--back-text: white;
+	--fore-tools: black;
+	--back-tools: white;
+	--fore-help: black;
+	--back-help: white;
+	--gradient-special: black;
+	--tile-special: black;
+	--canvas-special: black;
+	--fore-highlight: black;
+	--back-highlight: #DDDDDD;
+	--fore-text-note: black;
+	--back-text-note: lightGray;
+	--border-tools: black;
+	--border-section: black;
+	--border-gradient: black;
+	--border-gradient-specs: var(--gradient-special);
+	--border-tile-specs: var(--tile-special);
+	--border-note: black;
+	--fore-text-disabled: #444444;
+	--back-text-disabled: #BBBBBB;
+	--fore-button: black;
+	--back-button: #DDDDDD;
+	--fore-button-tools: black;
+	--back-button-tools: #CCCCCC;
+}
+body.rainbow-mode {
+	--fore-text: lime;
+	--back-text: black;
+	--fore-tools: yellow;
+	--back-tools: Indigo;
+	--fore-help: Chartreuse;
+	--back-help: black;
+	--gradient-special: aqua;
+	--tile-special: yellow;
+	--canvas-special: lime;
+	--fore-highlight: white;
+	--back-highlight: DarkBlue;
+	--fore-text-note: PaleTurquoise;
+	--back-text-note: DarkBlue;
+	--border-tools: DarkOrange;
+	--border-section: red;
+	--border-gradient: white;
+	--border-gradient-specs: var(--gradient-special);
+	--border-tile-specs: var(--tile-special);
+	--border-note: yellow;
+	--fore-text-disabled: #BBBBBB;
+	--back-text-disabled: #444444;
+	--fore-button: white;
+	--back-button: MidnightBlue;
+	--fore-button-tools: white;
+	--back-button-tools: Indigo;
+	--border-button-tools: yellow;
+	--bordershadow-button-tools: #999933;
+}
+
+button {
+	color: var(--fore-button);
+	background-color: var(--back-button);
+	border: 1px solid var(--border-button);
+	border-bottom-color: var(--bordershadow-button);
+	border-right-color: var(--bordershadow-button); }
+toolset button {
+	color: var(--fore-button-tools);
+	background-color: var(--back-button-tools);
+	border: 1px solid var(--border-button-tools);
+	border-bottom-color: var(--bordershadow-button-tools);
+	border-right-color: var(--bordershadow-button-tools); }
+
+kbd {
+	display: inline-block;
+	text-indent: 0 !important; }
+kbd span {
+	display: inline-block;
+	position: relative;
+	border: 1px solid var(--border-kbd);
+	border-bottom: 2px solid var(--border-kbd-shaddow);
+	border-right: 2px solid var(--border-kbd-shaddow);
+	border-radius: 1.618em / 2em;
+	color: var(--fore-text-kbd);
+	background-color: var(--back-text-kbd);
+	text-align: center;
+	margin: 0 .382em;
+	padding: 0 .618em;
+	line-height: .854em;
+	vertical-align: middle; }
+
+
+/*  ¿the MSIE6 of 2023?  SpiderMonkey kicks ass.  The rendering engine, not so much... * /
+:has(> note) { /* FireFox fails with the direct-decendent > modifier even with the flag set »»» about:config >>> layout.css.has-selector-enabled=true * /
+	position: relative;
+	background-color: orange; }
+/**/
+label, legend, th {  /*fix FireFox - it STILL does not recognize :has */
+	position: relative; }
+/* * /
+:has(> note):hover {
+	background-color: cyan;
+	z-index: 20; }
+/**/
+fieldset:hover,
+fieldset:focus-within,
+label:focus-within,
+label:hover,    /*fix FireFox - it STILL does not recognize :has */
+th:hover,    /*fix FireFox - it STILL does not recognize :has */
+legend:hover {  /*fix FireFox - it STILL does not recognize :has */
+	z-index: 20; }
+
+note {
+	display: none; }
+:focus-within > note,
+:hover > note {
+	display: block;
+	position: absolute;
+	top: 100%;
+	left: 1.618em;
+	bottom: auto;
+	right: auto;
+	padding: .162em;
+	color: var(--fore-text-note);
+	background-color: var(--back-text-note);
+	border: 3px double var(--border-note); }
+fieldset:disabled note {
+	display: none; }
+#sculptures ul note {
+	top: calc(-3px - .162em);
+	left: 100%;
+	white-space: nowrap;
+	border-left: none; }
+note span {
+	white-space: nowrap; }
+
+
+
+main {
+	position: fixed;
+	display: grid;
+	grid-template-rows: min-content auto;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	color: var(--fore-text);
+	background-color: var(--back-text);
+}
+toolbar {  /* main:grid  min-content */
+	display: block;
+	overflow: show;
+	margin: 0;
+	padding: 0 .618em .062em;
+	border-bottom: 2px solid var(--border-tools);
+	color: var(--fore-tools);
+	background-color: var(--back-tools);
+}
+toolbar:hover,
+toolbar.open {
+	z-index: 20;
+
+}
+workspace { /* main:grid  auto */
+	display: block;
+	position: relative;
+}
+
+toolset {
+	display: inline-block;
+	position: relative;
+	margin-right: 1em; }
+
+toolset > fieldset {
+	display: none;
+}
+toolset:hover > fieldset {
+	display: block;
+	position: absolute;
+	top: 100%;
+	bottom: auto;
+	left: 0;
+	right: auto;
+	margin: 0;
+	padding: 0 .162em .162em .162em;
+	border: 2px solid var(--border-tools);
+	border-top: none;
+	color: var(--fore-tools);
+	background-color: var(--back-tools);
+	}
+toolset fieldset fieldset {
+	padding: 0;
+	border: none; }
+toolset button {
+	display: block;
+	white-space: nowrap; }
+
+fieldset:disabled {
+	color: var(--fore-text-disabled) !important;
+	background-color: var(--back-text-disabled) !important;
+}
+
+workspace > section {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: block;
+	margin: 2em 0 0 0;  /* space on top for headline */
+	padding: .618em;
+	border-top: 2px solid var(--border-section);
+	z-index: 2;
+	color: var(--fore-text);
+	background-color: var(--back-text);
+}
+workspace > section.top {
+	z-index: 3; }
+workspace > section:hover { /* fails in FireFox on Ubuntu when you hover over the h3 “tab” */
+	z-index: 4; }
+workspace > section.top > h3 {
+	z-index: 10; }
+
+workspace > section > h3 {
+	font-size: 1.382rem;
+	margin: 0;
+	padding: .162em .618em 0;
+	position: absolute;
+	bottom: 100%;
+	top: auto;
+	left: 0;
+	right: auto;
+	background-color: inherit;
+	border: 3px double var(--border-section);
+	border-bottom: none; }
+workspace > section + section > h3 {
+	left: 33%; }
+workspace > section + section + section > h3 {
+	left: 67%; }
+#rainbows > h3 {
+	color: var(--gradient-special); }
+#tiles > h3 {
+	color: var(--tile-special); }
+#canvas > h3 {
+	color: var(--canvas-special); }
+
+workspace > section > * {
+	display: block; }
+
+.gradient textarea,
+.tile textarea {
+	vertical-align: top; }
+
+
+.gradient {
+	border: 3px double var(--border-gradient-specs); }
+.gradient > legend,
+.gradient > fieldset:first-of-type label:first-child {
+	color: var(--gradient-special); }
+.gradient fieldset {
+	border: none;
+	border-top: 1px solid;
+	border-color: inherit; }
+.gradient fieldset:first-of-type {
+	border: none; }
+.gradient p {
+	margin: 0;
+	padding: 0 1.382em; }
+.gradient gradient + p {
+	margin-top: calc(22px + .382em); }
+.gradient p label {
+	margin-right: .618em; }
+.gradient gradient {
+	position: relative;
+	display: block;
+	width: calc(100% - 34px);
+	height: 2.618em;
+	margin: 0 17px 0 17px;  /* l/r is space for pointer-overflow */
+	border: 3px double var(--border-gradient);
+	background: repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0px, rgba(0,0,0,.5) 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px),
+							repeating-linear-gradient(90deg, black 0px, black 5px, white 5px, white 10px);  }
+.gradient gradient.soft-checkered {
+	background: repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0px, rgba(255,255,255,.5) 10px),
+							repeating-linear-gradient(90deg, black 0px, white 10px);  }
+.gradient gradient pointer { /* SVG pointers are 27px × 44px  */
+	position: absolute;
+	top: calc(100% - 22px);
+	bottom: auto;
+	right: auto; }
+.gradient gradient pointer.highlight {
+	outline: 3px double var(--gradient-special);  }
+.gradient gradient pointer:first-of-type {
+	left: -13px;; }
+.gradient gradient pointer:last-of-type {
+	left: calc(100% - 13px); }
+.gradient .color.highlight {
+	color: var(--fore-highlight);;
+	background-color: var(--back-highlight); }
+.gradient swatch {
+	display: inline-block;
+	width: 2em;
+	height: 1.328em;
+	border: 1px solid;
+	vertical-align: middle; }
+.gradient input[type='MasterColorPicker'] {
+	width: 27em; }
+
+
+
+section #tiletypes {
+	max-height: 100%;
+	overflow: auto; }
+#tiletypes details summary {
+	font-size: 1.382rem;
+	color: var(--tile-special); }
+#tiletypes details > fieldset {
+	display: block; }
+#tiletypes fieldset {  /*  CSS stylesheet inheritance rules are simply INSANE - too simple to begin with, then INSANE people expanded the precedence rules into a complete mess of spagetti  */
+	border-color: inherit; }
+#tiletypes .tile {
+	border: 3px double var(--border-tile-specs); }
+.tile > legend,
+fieldset[template='tileheader'] label:first-child,
+.specs > legend {
+	color: var(--tile-special); }
+fieldset[template='tileheader'] {
+	border: none; }
+fieldset[template='tileheader'] label {
+	display: inline-block; }
+#tiletypes details fieldset.specs {
+	border: 1px solid; }
+fieldset[template='tiledata'] {
+	text-align: center; }
+fieldset[template='tiledata'] .scaling label,
+fieldset[template='tiledata'] table {
+	display: inline-block;
+	white-space: nowrap; }
+fieldset[template='tiledata'] .scaling label {
+	padding: .162em 1em;
+	border-right: 3px double; }
+fieldset[template='tiledata'] .scaling label:last-child {
+	border-right: none; }
+fieldset[template='tiledata'] table {
+	vertical-align: top;
+	margin: 0 1.618em 0 0;
+	border: 1px solid var(--tile-special); }
+fieldset[template='tiledata'] table:last-of-type {
+	margin-right: 0; }
+fieldset[template='tiledata'] table caption {
+	color: var(--tile-special); }
+fieldset[template='tiledata'] tr.center td {
+	color: var(--fore-text-disabled);
+	background-color: var(--back-text-disabled); }
+fieldset[template='tiledata'] tr.center td:first-of-type {
+	color: inherit;
+	background-color: inherit; }
+
+
+#preview {
+	float: right;
+	width: 50%;
+	height: calc(100% - 1em);
+	border: 4px solid green; }
+
+
+
+.sculptedRainbow .fill {
+	display: block;
+	color: var(--tile-special); }
+.sculptedRainbow ul,
+.sculptedRainbow > fieldset {
+	border: 1px solid;
+	display: inline-block;
+	vertical-align: top; }
+.sculptedRainbow ul {
+	margin: 0;
+	padding: 0;
+	list-style-type: none; }
+.sculptedRainbow ul li:has(input:checked) {
+	color: var(--tile-special); }
+.sculptedRainbow ul li > fieldset {
+	border: none;
+	padding: 0;
+	margin: 0; }
+.sculptedRainbow .masks {
+	padding: 0;
+	margin: 0 0 0 .618em; }
+.masks input[type='file'] {
+	display: block; }
+.sculptedRainbow .rotate > * {
+	display: block; }
+.sculptedRainbow .rotate legend table {
+	white-space: nowrap;
+	text-align: center; }
+.sculptedRainbow .rotate legend table caption {
+	border-bottom: 1px solid; }
+.sculptedRainbow .rotate legend table th {
+	border-top: 1px solid;
+	border-bottom: 1px dashed; }
+.sculptedRainbow .rotate legend table td {
+	padding: .162em .162em .162em 2.618em;
+	text-align: left; }
+.sculptedRainbow .rotate dl {
+	margin: 0 0 .618em 0;
+	padding: 0; }
+.sculptedRainbow .rotate dt {
+	font-weight: bold;
+	font-size: 1.168em;}
+.superstars fieldset,
+.superstars label,
+.extend label,
+.spiral label,
+.hw label {
+	display: block }
+.extend label:last-child {
+	text-align: right; }
+.spiral fieldset {
+	border: none;
+	padding: 0 0 0 1em; }
+.pie tr:first-child th {
+	border-bottom: 1px dashed; }
+.pie tr:first-child th:first-child,
+.pie tr:first-child th:last-child {
+	border: none; }
+.pie tr:nth-child(2) th:nth-child(2) {
+	border-left: 1px dashed; }
+.pie input.by-number {
+	display: none; }
+.pie tr.by-number input.by-number {
+	display: inline; }
+.pie tr.by-number input.by-angle {
+	display: none; }
+
+
+.mosaic > label:first-child {
+	color: var(--tile-special); }
+.mosaic label,
+.mosaic label + fieldset {
+	display: inline;
+	vertical-align: top; }
+.mosaic > fieldset:last-child {
+	display: grid;
+	grid-template-columns: 20% 20% 20% 20% 20%;
+	grid-template-columns: auto auto auto auto auto;
+	text-align: center;
+	padding-left: 0;
+	padding-right: 0; }
+.mosaic > fieldset:last-child label {
+	padding: 0.162em;
+	border-right: 3px double; }
+.mosaic > fieldset:last-child label:last-child {
+	border-right: none; }
+
+.image > * {
+	display: inline-block;
+	vertical-align: top; }
+.image > label:first-of-type {
+	color: var(--tile-special); }
+.image > fieldset label {
+	display: block; }
+
+
+
+aside {
+	display: none; }
+aside.active {
+	display: grid;
+	grid-template-rows: min-content auto;
+	position: fixed;
+	top: 20%;
+	bottom: auto;
+	left: 20%;
+	right: auto;
+	width: 60%;
+	height: 60%;
+	padding: .618em;
+	color: var(--fore-help);
+	background-color: var(--back-help);
+	border: 5px double;
+	font-size: 1.162em;
+	text-align: justify;
+}
+aside h3 {
+	text-align: center;
+	color: var(--fore-tools);
+	background-color: var(--back-tools);
+	margin: 0 1.618em 0.162em 1.618em;
+	padding: 0;
+}
+aside > h3 > button {
+	position: absolute;
+	top: 0.162em;
+	right: 0.162em;
+	bottom: auto;
+	left: auto;
+	margin: 0;
+	padding: 0.162em;
+	color: inherit;
+	background-color: inherit;
+	border: 1px solid;
+}
+aside help {
+	display: block;
+	overflow: auto;
+	margin: 0;
+	padding: 0 0.382em 0 0;
+}
+aside help h4,
+aside help p {
+	margin: 0 0 0.162em 0;
+	padding: 0;
+}
+aside help p {
+	text-indent: 1em; }
+aside help h4 {
+	margin-top: 0.618em;
+	text-decoration: underline;
+	text-align: center;
+}
+aside help h5 {
+	margin: 0 0 0 0.618em;
+	text-decoration: underline;
+}
+aside help ul,
+aside help dl {
+	margin-top: 0;
+	margin-bottom: 0.162em;  }
+aside help dfn {
+	font-weight: bold; }
+aside help code {
+	white-space: pre;
+	font-size: 1.162em;
+}
+aside help var {
+	font-weight: bold;
+	text-decoration: underline;
+}
