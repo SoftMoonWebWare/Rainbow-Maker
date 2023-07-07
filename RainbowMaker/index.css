@@ -36,6 +36,11 @@ body.dark-mode {
 	--back-highlight: #222222;
 	--fore-text-note: white;
 	--back-text-note: dimGray;
+	--fore-message: black;
+	--back-message: white;
+	--fore-message-error: #111111;
+	--fore-text-flash: black;
+	--back-text-flash: white;
 	--border-tools: white;;
 	--border-section: white;
 	--border-gradient: white;
@@ -63,6 +68,11 @@ body.light-mode {
 	--back-highlight: #DDDDDD;
 	--fore-text-note: black;
 	--back-text-note: lightGray;
+	--fore-message: white;
+	--back-message: black;
+	--fore-message-error: #EEEEEE;
+	--fore-text-flash: white;
+	--back-text-flash: black;
 	--border-tools: black;
 	--border-section: black;
 	--border-gradient: black;
@@ -90,6 +100,11 @@ body.rainbow-mode {
 	--back-highlight: DarkBlue;
 	--fore-text-note: PaleTurquoise;
 	--back-text-note: DarkBlue;
+	--fore-message: GreenYellow;
+	--back-message: black;
+	--fore-message-error: DeepPink;
+	--fore-text-flash: black;
+	--back-text-flash: DeepPink;
 	--border-tools: DarkOrange;
 	--border-section: red;
 	--border-gradient: white;
@@ -182,7 +197,9 @@ fieldset:disabled note {
 note span {
 	white-space: nowrap; }
 
-
+.flash {
+	color: var(--fore-text-flash) !important;
+	background-color: var(--back-text-flash) !important; }
 
 main {
 	position: fixed;
@@ -221,6 +238,12 @@ toolset {
 
 toolset > fieldset {
 	display: none;
+	margin: 0;
+	padding: 0 .162em .162em .162em;
+	border: 2px solid var(--border-tools);
+	border-top: none;
+	color: var(--fore-tools);
+	background-color: var(--back-tools);
 }
 toolset:hover > fieldset {
 	display: block;
@@ -228,20 +251,39 @@ toolset:hover > fieldset {
 	top: 100%;
 	bottom: auto;
 	left: 0;
-	right: auto;
-	margin: 0;
-	padding: 0 .162em .162em .162em;
-	border: 2px solid var(--border-tools);
-	border-top: none;
-	color: var(--fore-tools);
-	background-color: var(--back-tools);
-	}
+	right: auto; }
 toolset fieldset fieldset {
 	padding: 0;
 	border: none; }
-toolset button {
+toolset button,
+toolset label {
 	display: block;
 	white-space: nowrap; }
+
+toolset > fieldset#options.panel {
+	display: block;
+	position: fixed;
+	top: 16.2%;
+	right: 16.2%;
+	left: 16.2%;
+	bottom: 16.2%;
+	border: 2px solid var(--border-tools);
+}
+toolset #options .panel {
+	display: none; }
+toolset #options.panel span.panel {
+	display: inline; }
+toolset #options.panel span.panel + span {
+	display: none; }
+toolset #options.panel h4.panel {
+	display: block;
+	text-align: center;
+	margin: 0 0 .168em;
+	padding: 0; }
+toolset #options.panel legend.panel {
+	display: inline-block; }
+
+
 
 fieldset:disabled {
 	color: var(--fore-text-disabled) !important;
@@ -309,6 +351,25 @@ workspace > section > * {
 	border: none;
 	border-top: 1px solid;
 	border-color: inherit; }
+
+.gradient > fieldset:first-of-type,
+.gradient messages {
+	vertical-align: top;
+	display: inline-block; }
+
+.gradient messages {
+	margin: 0;
+	padding: .168em;
+	font-size: 1.618em;
+	color: var(--fore-message);
+	background-color: var(--back-message);
+	border: 1px solid var(--fore-message); }
+.gradient messages msg {
+	display: block; }
+.gradient messages.error {
+	border: 1px solid var(--fore-message-error); }
+.gradient messages.error msg {
+	color: var(--fore-message-error); }
 .gradient fieldset:first-of-type {
 	border: none; }
 .gradient p {

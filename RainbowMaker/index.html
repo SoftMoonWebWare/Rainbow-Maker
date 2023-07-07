@@ -57,10 +57,20 @@ Object.defineProperties(SoftMoon, {
 		</fieldset>
 		</fieldset>
 	</toolset>
+	<toolset><tools>Options</tools>
+		<fieldset id='options'>
+			<h4 class='panel'>RainbowMaker options</h4>
+			<button type="button" onclick='toggleToolbarPanel(this.parentNode);'><span class='panel'>close</span><span>open</span> panel</button>
+			<fieldset id='gradient options'><legend class='panel'>gradients</legend>
+				<label>¿<input type='checkbox' name='auto-sort' checked>auto-sort gradient stops?</label>
+			</fieldset>
+		</fieldset>
+	</toolset>
 	<toolset><tools>☻Help☻</tools>
 		<fieldset onclick='if (event.target.type==="button")  helpFor(event.target.innerHTML)'>
 		<button type="button">getting started</button>
 		<button type="button">Gradients</button>
+		<button type="button">Colors</button>
 		</fieldset>
 	</toolset>
 </toolbar>
@@ -79,6 +89,7 @@ Object.defineProperties(SoftMoon, {
 				<label>Gradient name: <input type='text' name='gradient[0][name]'></label>
 				<label>Comments: <textarea name='gradient[0][comment]' rows='2' cols='28'></textarea></label>
 			</fieldset>
+			<messages><msg>Foo bar baz buzz</msg>(and some other stuff here too)</messages>
 			<p><label>¿soft-checkered background<input type='checkbox'
 				onchange='this.closest(".gradient").querySelector("gradient").classList.toggle("soft-checkered", this.checked)'>?</label>
 			<strong>&lArr;</strong> This is only for display purposes herein to indicate transparencies in the gradient itself.&nbsp;
@@ -92,21 +103,34 @@ Object.defineProperties(SoftMoon, {
 				</svg></pointer>
 			</gradient>
 			<p>Click on the gradient above to add a color-stop.</p>
-			<fieldset class='specs' onkeydown='enhanceGradientKeyboard(event)'>
-				<fieldset class='color' onmouseover='highlightColorPointer(event)' onmouseout='highlightColorPointer(event)'>
-					<label>stop<input class='stop' type='numeric' name='gradient[0][stop][0]' size='7' maxlength='7'
-						value="0%" default-value="" placeholder='% ‖ pixels' min='0' max='100%' units='%,pixels,px' auto-append-unit onchange='relocateColor(this, event.type)'></label>
+			<fieldset class='specs'
+								onkeydown='enhanceGradientKeyboard(event)'
+								onchange='buildDisplayGradient(event)'>
+				<label>Grade through color-space:<select name='gradient[0][colorSpace]'>
+					<option>RGB</option>
+					<option>HSL</option>
+					<option value='hsb'>HSB/HSV</option>
+					<option>HCG</option>
+					<option>CMYK</option>
+				</select></label>
+				<fieldset class='color'
+									onmouseover='highlightColorPointer(event)'
+									onmouseout='highlightColorPointer(event)'>
+					<label>stop<input class='stop' type='numeric' name='gradient[0][0][stop]' size='7' maxlength='10' allow-plus-sign
+						value="0%" default-value="" placeholder='% ‖ pixels' min='-100%' max='100%' units='%,pixels,px' auto-append-unit></label>
 					<swatch></swatch>
-					<input class='RGBAb' type='MasterColorPicker' name='gradient[0][RGB+Ab][0]' swatch='this.parentNode.querySelector("swatch")' placeholder='color'>
-					<label>pixel-alpha<input class='Ap' type='numeric' name='gradient[0][Ap][0]' size='4' maxlength='7' placeholder="%"
+					<input class='RGBAb' type='MasterColorPicker' name='gradient[0][0][RGBAb]' swatch='this.parentNode.querySelector("swatch")' placeholder='color'>
+					<label>pixel-alpha<input class='Ap' type='numeric' name='gradient[0][0][Ap]' size='4' maxlength='7' placeholder="%"
 						value='' min='-100' max='100' allow-plus-sign units='%' auto-append-unit></label>
 				</fieldset>
-				<fieldset class='color' onmouseover='highlightColorPointer(event)' onmouseout='highlightColorPointer(event)'>
-					<label>stop<input class='stop' type='numeric' name='gradient[0][stop][1]' size='7' maxlength='7'
-						value="100%" default-value="" placeholder='% ‖ pixels' min='0' max='100%' units='%,pixels,px' auto-append-unit onchange='relocateColor(this, event.type)'></label>
+				<fieldset class='color'
+									onmouseover='highlightColorPointer(event)'
+									onmouseout='highlightColorPointer(event)'>
+					<label>stop<input class='stop' type='numeric' name='gradient[0][1][stop]' size='7' maxlength='10' allow-plus-sign
+						value="100%" default-value="" placeholder='% ‖ pixels' min='-100%' max='100%' units='%,pixels,px' auto-append-unit></label>
 					<swatch></swatch>
-					<input class='RGBAb' type='MasterColorPicker' name='gradient[0][RGB+Ab][1]' swatch='this.parentNode.querySelector("swatch")' placeholder='color'>
-					<label>pixel-alpha<input class='Ap' type='numeric' name='gradient[0][Ap][1]' size='4' maxlength='7' placeholder="%"
+					<input class='RGBAb' type='MasterColorPicker' name='gradient[0][1][RGBAb]' swatch='this.parentNode.querySelector("swatch")' placeholder='color'>
+					<label>pixel-alpha<input class='Ap' type='numeric' name='gradient[0][1][Ap]' size='4' maxlength='7' placeholder="%"
 						value='' min='-100' max='100' allow-plus-sign units='%' auto-append-unit></label>
 				</fieldset>
 			</fieldset>
@@ -464,14 +488,75 @@ Object.defineProperties(SoftMoon, {
 	That way you can adjust one stop-point to perfection and affect many in relation.&nbsp;
 	By prepending the stop-point value with a plus or minus ( <kbd>+ −</kbd> ) sign,
 	it becomes relatively offset from the previous or next point, respectively.</p>
+	<p>You can drag stop-point pointers (the triangles) left and right using the mouse.&nbsp;
+	You can drag a pointer to the previous and next pointers, and no farther, with no modifier keys pressed.&nbsp;
+	This way you don’t accidently change things you don’t want changed.&nbsp;
+	When you hold the <kbd><span>Shift</span></kbd> key while dragging a pointer,
+	the previous or next pointers can shift along with the pointer you are dragging.&nbsp;
+	If the previous/next pointer is not relative (it is <strong>not</strong> prepended with a + or − sign)
+	it will shift when the pointer you are dragging meets it.&nbsp;
+	If the previous/next pointer is relative (it <strong>is</strong> prepended with a + or − sign)
+	it will shift if it is relative to the pointer you are dragging,
+	or otherwise shift when the pointer you are dragging meets it.&nbsp;
+	If there are more relative stop-points,
+	these may also shift when relative to any other shifting stop-points, as the spec defines.&nbsp;
+	When you hold the <kbd><span>Ctrl</span></kbd> key while dragging a pointer,
+	you can drag it over and past other pointers without moving them, changing the order of stop-points.&nbsp;
+	When you hold the <kbd><span>Shift</span> + <span>Alt</span></kbd> keys while dragging a pointer,
+	all stops will shift, and their movement will be proportional.</p>
 
+	<h4 id='help_for_Colors'>Gradient Colors and Color-Spaces</h4>
+	<p>You may choose one of several color-spaces to “grade-through”.&nbsp;
+	The color-space you choose will effect the range of generated colors between color-stops.&nbsp;
+	The color-stops themselves may be defined in any color-space,
+	regardless of the gradient’s color-space or any other color-stop.&nbsp;
+	The colors you choose will be converted to the <abbr title='red, green, blue'>RGB</abbr> color-space first,
+	and then to the color-space of the gradient.&nbsp;
+	Due to the mathematical inconsistancies between color-spaces
+	(some color-spaces have more than one way to define the exact same color)
+	this process may seem to alter the color specs you choose … … this is normal.</p>
+	<p>Colors may be defined any way that the MasterColorPicker defines colors (see the MasterColorPicker ☺Help☺ panel).&nbsp;
+	In addition, you may define <abbr title='red, green, blue'>RGB</abbr> colors with “undefined” and/or “floating” channels.&nbsp;
+	<strong><em>¡Note!</em> You may only use undefined and floating channels
+	  when the gradient’s color-space is also <abbr title='red, green, blue'>RGB</abbr>.</strong></p>
+	<h5>Undefined Channels</h5>
+	<p>Undefined <em>color</em> channels are created using either a space or an underdash <kbd>_</kbd>
+	in place of a digital <abbr title='red, green, blue'>RGB</abbr> value.&nbsp;
+	<strong><em>¡Note!</em> undefined <em>color</em> channels are different from undefined <em>alpha</em> channels … …
+	see “Using the Alpha Channels” below.</strong>
+	For example: <kbd>RGB(120, , 53)</kbd>.&nbsp;
+	You may also specify an alpha-blend and/or an alpha-pixel value(s).&nbsp;
+	When the Rainbow-Maker applies these colors to the canvas pixel,
+	it will not alter the corresponding undefined channel of the pixel;
+	only defined channels will be applied or blended according to the alpha-value.&nbsp;
+	You may also leave all channels blank,
+	and only specify the alpha-pixel value (and possibly an alpha-blend value),
+	and the canvas pixel will only have its alpha value modified - the color will remain unchanged.&nbsp;
+	To use undefined channels, two adjacent color-stops must have the same set of undefined channels;
+	if the previous or next sequence of colors has a different set of undefined channels (or none at all),
+	then you must have two color-stops at the same position, each with a different set.</p>
+	<h5>Floating Channels</h5>
+	<p>Floating channels are created using either an asterick <kbd>*</kbd> or a lozenge <kbd>◊</kbd>
+	in place of a digital <abbr title='red, green, blue'>RGB</abbr> value.&nbsp;
+	They allow you to grade different channels at different rates to different points.&nbsp;
+	For example, if you have three adjacent color stops:
+	<kbd>RGB(129, 35, 27)</kbd> &nbsp; <kbd>RGB(56, ◊, 40)</kbd> &nbsp; <kbd>RGB(200, 200, 200)</kbd>
+	then the red channel will grade from 129→56→200, and the blue channel will grade from 27→40→200;
+	but the green channel will grade from 35→200 over the same run of colors.&nbsp;
+	If the middle color-stop is not centered between the other two,
+	this can make an even bigger difference in effects.&nbsp;
+	Alpha-channels may also be floating.&nbsp;
+	Floating channels may be used in progression between more than three color-stops.&nbsp;
+	You may use more than one floating channel in a color-stop,
+	but if all (5) channels are floating, the stop is logically pointless.&nbsp;
+	Logically, the first and last color-stops may not have floating channels.</p>
 	<h5>Using the Alpha-channels:</h5>
 	<p>The RainbowMaker takes gradients to the next level and allows you more complete control over the alpha-channel.&nbsp;
 	You may specify <strong>both</strong> an <em>alpha-blend</em> opacity <strong>and</strong> an <em>alpha-pixel</em> opacity for every color you choose.&nbsp;
 	The <dfn>alpha-blend</dfn> opacity specifies the rate at which the color you choose for your gradient blends into the pre-existing color on the canvas:
 	as usual, a value of <kbd>100%</kbd> means the gradient-color is fully opaque and completely covers the canvas,
 	and a value of 0% is completely transparent and the canvas shows through unchanged.&nbsp;
-	Also as usual, if no alpha-blend rate is defined, it is assumed to be <kbd>100%</kbd>.
+	<strong>Also as usual, if no alpha-blend rate is defined, it is assumed to be <kbd>100%</kbd>.</strong>
 	The <dfn>alpha-pixel</dfn> opacity specifies the alpha-value of the canvas pixel <strong>after</strong> the gradient-color has been applied to the canvas
 	(and blended into the canvas according to the alpha-blend rate).&nbsp;
 	<strong>If no alpha-pixel value is defined, the alpha-value of the canvas pixel is left unchanged.</strong>&nbsp;
@@ -497,6 +582,14 @@ Object.defineProperties(SoftMoon, {
 	with no blending of the pre-existing canvas-alpha.&nbsp;
 	To overcome this complexity, simply create two adjacent color-stops with the
 	same stop-point &amp; same color, but different alpha-pixel formula specs.</p>
+	<h5>Color “hints”</h5>
+	<p>As with specifications with other gradient development software,
+	you may define color “hints” between two defined colors.&nbsp;
+	The color hint is just a stop-position between two colors, without a color of its own;
+	the mid-point of the gradient between the two colors is positioned at the color-hint position.&nbsp;
+	Unlike other gradient development software, defining the stop position is a bit different:
+	see “Using the Gradientor” on MasterColorPicker’s ☺Help☺ panel.
+	</p>
 </help>
 </aside>
 

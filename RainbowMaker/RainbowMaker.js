@@ -18,14 +18,14 @@ const  INFINITY='∞';  // ¿ this may? should? be farmed out to a larger framew
 
 
 
-/* not currently used:
+/* not currently used: */
 if (!(Object.clone instanceof Function))
 	Object.clone=function($O, $deep=0)  {
-		const NO={};
+		const NO=new $O.constructor();
 		for (const k in $O)  {
 			 NO[k]= ($deep>0  &&  typeof $O[k] === 'object') ? Object.clone($O[k], $deep-1) : $O[k];  }
 		return NO;  }
- */
+ /**/
 
 
 
@@ -37,7 +37,7 @@ if (!SoftMoon.WebWare)  Object.defineProperty(SoftMoon, 'WebWare', {value:{}, en
 
 {  // create a private NameSpace for the rest of this file
 
-const RainbowMaker={MAX_GRAFK_SIZE: 500*500};
+const RainbowMaker={MAX_GRAFK_SIZE: 500*500, rainbows:{}};
 
 
 /* The “tile” (super-class of Tile) is the basic unit of “data” that the RainbowMaker uses.
@@ -1897,7 +1897,7 @@ function sculptor($scheme, $context, $doResize=true)  {
 
 // ======================================================================================== \\
 
-class ColorBand_5Ch  {
+class ColorBand  {
 
 //  colors are defined as: [R, G, B, Ap, Ab]  →  R,G,B = (Red, Green, Blue) = (0-255);
 //                                                  Ap = The Alpha of the resulting pixel
@@ -1905,10 +1905,10 @@ class ColorBand_5Ch  {
 	static defaultColorArray=[0,0,0,0,0];
 	static defaultColorObject={'R':0, 'G':0, 'B':0, 'Ap':0, 'Ab':0};
 	static  {
-		Object.defineProperty(ColorBand_5Ch.defaultColorObject, 'channels', {value:['R', 'G', 'B', 'Ap', 'Ab']});
-		Object.freeze(ColorBand_5Ch.defaultColorArray);
-		Object.freeze(ColorBand_5Ch.defaultColorObject);
-		Object.freeze(ColorBand_5Ch.defaultColorObject.channels);  }
+		Object.defineProperty(ColorBand.defaultColorObject, 'channels', {value:['R', 'G', 'B', 'Ap', 'Ab']});
+		Object.freeze(ColorBand.defaultColorArray);
+		Object.freeze(ColorBand.defaultColorObject);
+		Object.freeze(ColorBand.defaultColorObject.channels);  }
 	static defaultColorObjectConstructor=function(R,G,B,Ap,Ab)  {
 		this.R=R;  this.G=G;  this.B=B;  this.Ap=Ap;  this.Ab=Ab;  };
 
@@ -1919,49 +1919,56 @@ class ColorBand_5Ch  {
 	static replaceOldRainbows=true;
 
 	constructor(name)  {
-		if (new.target===ColorBand_5Ch)
-			throw new TypeError('A simple ColorBand_5Ch class instance is insufficient. You must use a class extention.');
+		if (new.target===ColorBand)
+			throw new TypeError('A simple ColorBand class instance is insufficient. You must use a class extention.');
 		if (RainbowMaker.rainbows[name])  {
-			if (ColorBand_5Ch.replaceOldRainbows)  {
+			if (ColorBand.replaceOldRainbows)  {
 				const i=RainbowMaker.rainbows.findIndex(t=>t.name===name);
 				if (i>=0)  RainbowMaker.rainbows.splice(i,1);  }
 			else throw new Error('A RainbowMaker Rainbow already exists with the name “'+name+'”.');  }
 		this.name=name;  }  }
 
-ColorBand_5Ch.prototype.name="ColorBand_5Ch";
-ColorBand_5Ch.prototype.defaultColor=ColorBand_5Ch.defaultColorArray;
+ColorBand.prototype.name="ColorBand";
+ColorBand.prototype.defaultColor=ColorBand.defaultColorArray;
 
 
 
 
-class Paletted_ColorBand extends ColorBand_5Ch {
+class Paletted_ColorBand extends ColorBand {
 	palette;
 	defaultColor;
 
-	constructor(name, paletteCount, color)  {
+	constructor(name, paletteCount, colors, cSpace)  {
 		super(name);
 		if (paletteCount instanceof Array)  this.palette=paletteCount;
 		else  {
 			if (paletteCount<1)  throw new RangeError(this.name+this.__proto__.name+' palettes must have at least 1 slot.');
 			if (paletteCount>10000)  console.warn(this.name+this.__proto__.name+' palettes are recommended to have 10000 or less slots.');
-			if (color)  this.defaultColor=color;
-			this.palette=Array(paletteCount).fill(this.defaultColor);  }  }
+			if (colors)  {
+				if (colors.gradientType==='Paletted')  {
 
-	colorAt(offset)  {return this.palette[Math.round(this.palette.length*offset)];};  }
+				}
+				else {
+					this.defaultColor=colors;
+					this.palette=Array(paletteCount).fill(this.defaultColor);  }  }  }
+		if (cSpace)  this.cSpace=cSpace;  }
+
+	colorAt(offset)  {return this.palette[Math.round(this.palette.length*offset)];}  }
 
 Paletted_ColorBand.prototype.name="Paletted_ColorBand";
+Paletted_ColorBand.prototype.cSpace='rgb';
 
 
 
-class Paletted_Gradient5Ch extends Paletted_ColorBand {
+class Paletted_Gradient extends Paletted_ColorBand {
 
 	colorStops=new Array;
-	colorConstructor=ColorBand_5Ch.defaultColorConstructor // ↓ if you use a user’s custom colorObject, define the channels Array ↓
-	channels=ColorBand_5Ch.userColorChannels; // =['R', 'G', 'B', 'Ab', 'Ap']  ← an optional array that maps channel numbers (0-4) to user’s channel names
+	colorConstructor=ColorBand.defaultColorConstructor // ↓ if you use a user’s custom colorObject, define the channels Array ↓
+	channels=ColorBand.userColorChannels; // =['R', 'G', 'B', 'Ab', 'Ap']  ← an optional array that maps channel numbers (0-4) to user’s channel names
 
 	addColorStop(offset, color, doReady=true)  {
-		if ((offset=round(offset))<0)  throw new RangeError('Paletted_Gradient5Ch.addColorStop() “offset” must not be negative after rounding.');
-		if (offset>=palette.length)  throw new RangeError('Paletted_Gradient5Ch.addColorStop() “offset” after rounding must not be greater than the number of palette slots.');
+		if ((offset=round(offset))<0)  throw new RangeError('Paletted_Gradient.addColorStop() “offset” must not be negative after rounding.');
+		if (offset>=palette.length)  throw new RangeError('Paletted_Gradient.addColorStop() “offset” after rounding must not be greater than the number of palette slots.');
 		this.colorStops[offset]=color;
 		if (doReady) this.ready();  }
 
@@ -1976,7 +1983,7 @@ class Paletted_Gradient5Ch extends Paletted_ColorBand {
 			const channel= this.channels ? this.channels[chnlNum] : chnlNum;
 			this.colorStops.forEach((c, stop) =>  {
 				if (c[channel]===null)  {
-					if (stop===0  ||  stop===this.colorStops.length-1)  throw new Gradient5ChError(this.name, 'The first and last stops in a Paletted_Gradient5Ch should never have null channels; found in: ',this.name);
+					if (stop===0  ||  stop===this.colorStops.length-1)  throw new Gradient5ChError(this.name, 'The first and last stops in a Paletted_Gradient should never have null channels; found in: ',this.name);
 					//else  continue;
 					else return;
 					}
@@ -1994,9 +2001,9 @@ class Paletted_Gradient5Ch extends Paletted_ColorBand {
 	//This is for user external reference only. Replacing it does nothing.
 	static curveIndex=curveIndex;  }
 
-Paletted_Gradient5Ch.prototype.isGradient=true;
-Paletted_Gradient5Ch.prototype.name="Paletted_Gradient5Ch";
-Paletted_Gradient5Ch.prototype.addColorStops=addColorStops;
+Paletted_Gradient.prototype.isGradient=true;
+Paletted_Gradient.prototype.name="Paletted_Gradient";
+Paletted_Gradient.prototype.addColorStops=addColorStops;
 
 
 
@@ -2019,7 +2026,7 @@ function addColorStops($stops)  {
 
 
 
-class TrueColor_Gradient5Ch extends ColorBand_5Ch {
+class TrueColor_Gradient extends ColorBand {
 
 	static interpColorArray=interpColorArray;  //This is for user external reference only. Replacing it does nothing.
 
@@ -2029,7 +2036,7 @@ class TrueColor_Gradient5Ch extends ColorBand_5Ch {
 
 	constructor(name, color)  {
 		super(name);
-		this.interpColor= TrueColor_Gradient5Ch.defaultColorInterpolator;
+		this.interpColor= TrueColor_Gradient.defaultColorInterpolator;
 		this.pseudoColorStops=new Array;
 		this.colorStops=new Array;
 		if (color)  this.defaultColor=color;
@@ -2037,8 +2044,8 @@ class TrueColor_Gradient5Ch extends ColorBand_5Ch {
 		this.colorStops[10000]=this.defaultColor;  }
 
 	addColorStop(offset, color, doReady=true)  {
-		if (offset<0)  throw new RangeError('TrueColor_Gradient5Ch.addColorStop() “offset” must not be negative.');
-		if (offset>1)  throw new RangeError('TrueColor_Gradient5Ch.addColorStop() “offset” must not be greater than 1.');
+		if (offset<0)  throw new RangeError('TrueColor_Gradient.addColorStop() “offset” must not be negative.');
+		if (offset>1)  throw new RangeError('TrueColor_Gradient.addColorStop() “offset” must not be greater than 1.');
 		this.pseudoColorStops[Math.round(offset*10000)]=color;
 		if (doReady) this.ready();  }
 
@@ -2050,7 +2057,7 @@ class TrueColor_Gradient5Ch extends ColorBand_5Ch {
 						empties=new Array;
 			this.colorStops.forEach((c, stop) =>  { // note we depend on the Array being iterated over in “order”
 				if (c[channel]===null)  {
-					if (stop===0  ||  stop===this.colorStops.length-1)  throw new Gradient5ChError(this.name, 'The first and last stops in a TrueColor_Gradient5Ch should never have null channels; found in: ',this.name);
+					if (stop===0  ||  stop===this.colorStops.length-1)  throw new Gradient5ChError(this.name, 'The first and last stops in a TrueColor_Gradient should never have null channels; found in: ',this.name);
 					else  empties.push(stop);  }
 				else {
 					if (empties.length>0)  {
@@ -2072,18 +2079,21 @@ class TrueColor_Gradient5Ch extends ColorBand_5Ch {
 				this.colorStops[low]
 			: this.interpColor(this.colorStops[low], this.colorStops[high], (offset-low)/(high-low));  }  }
 
-TrueColor_Gradient5Ch.prototype.isGradient=true;
-TrueColor_Gradient5Ch.prototype.name="TrueColor_Gradient5Ch";
-TrueColor_Gradient5Ch.prototype.addColorStops=addColorStops;
+TrueColor_Gradient.prototype.isGradient=true;
+TrueColor_Gradient.prototype.name="TrueColor_Gradient";
+TrueColor_Gradient.prototype.addColorStops=addColorStops;
 
 
-
+/* for all color-spaces */
+function interpColorArray(low, high, f)  {return low.map((l,i)=>{l===undefined ? high[i] : (high[i]===undefined ? l : l+f*(high[i]-l))});}
+/* for only the RGBAbAp color space * /
 function interpColorArray(low, high, f)  { return [
 	low[0]+f*(high[0]-low[0]),
 	low[1]+f*(high[1]-low[1]),
 	low[2]+f*(high[2]-low[2]),
 	low[3]+f*(high[3]-low[3]),
 	low[4]+f*(high[4]-low[4]) ];  }
+ */
 
 function interpColorObject(low, high, f)  { return {
 	'R': low['R']+f*(high['R']-low['R']),
@@ -2127,11 +2137,11 @@ function wizard($plan)  {
 			rainbows[name]=new Paletted_ColorBand(name, rainbow.colors);
 		break;
 		case "Paletted Gradient":
-			rainbows[name]=new Paletted_Gradient5Ch(name, rainbow.size, rainbow.defaultColor);
+			rainbows[name]=new Paletted_Gradient(name, rainbow.size, rainbow.defaultColor);
 			rainbows[name].addColorStops(rainbow.colorstops);
 		break;
 		case "TrueColor Gradient":
-			rainbows[name]=new TrueColor_Gradient5Ch(name, rainbow.defaultColor);
+			rainbows[name]=new TrueColor_Gradient(name, rainbow.defaultColor);
 			rainbows[name].addColorStops(rainbow.colorstops);
 		break;
 		default: throw new RainbowWizardError('rainbow', 'Unknown rainbow type “'+rainbow.type+'” of “'+name+'” for the Rainbow Wizard');  }  }
@@ -2294,10 +2304,10 @@ SoftMoon.WebWare.RainbowMaker.wizard=wizard;   // creates a scheme of Tiles acco
 SoftMoon.WebWare.RainbowMaker.formulator=formulator;  // creates a plan from the HTML form
 SoftMoon.WebWare.RainbowMaker.executor=executor;  // drives it all
 
-SoftMoon.WebWare.RainbowMaker.ColorBand_5Ch=ColorBand_5Ch;  //  this is an “abstract” root super-class — good for “instanceof”
+SoftMoon.WebWare.RainbowMaker.ColorBand=ColorBand;  //  this is an “abstract” root super-class — good for “instanceof”
 SoftMoon.WebWare.RainbowMaker.Paletted_ColorBand=Paletted_ColorBand;
-SoftMoon.WebWare.RainbowMaker.Paletted_Gradent5Ch=Paletted_Gradient5Ch;
-SoftMoon.WebWare.RainbowMaker.TrueColor_Gradient5Ch=TrueColor_Gradient5Ch;
+SoftMoon.WebWare.RainbowMaker.Paletted_Gradient=Paletted_Gradient;
+SoftMoon.WebWare.RainbowMaker.TrueColor_Gradient=TrueColor_Gradient;
 SoftMoon.WebWare.RainbowMaker.Gradient5ChError=Gradient5ChError;
 
 window.rainbowSculptor=sculptor;
