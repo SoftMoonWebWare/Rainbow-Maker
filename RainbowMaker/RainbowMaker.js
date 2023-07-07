@@ -1,5 +1,5 @@
 //  character encoding: UTF-8 UNIX   ¡tab-spacing: 2  important!   word-wrap: no
-/*  RainbowMaker 2.0 alpha	     January 30, 2023
+/*  RainbowMaker 2.0 alpha	     July 7, 2023
 		Copyright © 2011, 2012, 2021, 2023 Joe Golembieski, SoftMoon Webware
 
 		This program is a work of fictional imagination.

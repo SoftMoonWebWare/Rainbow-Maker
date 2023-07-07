@@ -1,5 +1,6 @@
 /* for RainbowMaker HTML interface */
 /* copyright © 2023 Joe Golembieski, SoftMoon-WebWare.  All rights reserved.
+ * == July 7, 2023
  */
 
 /* this file must be “deferred” and run AFTER the HTML has loaded */
