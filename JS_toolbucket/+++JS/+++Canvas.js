@@ -1,5 +1,5 @@
 //  character encoding: UTF-8 UNIX   ¡tab-spacing: 2  important!   word-wrap: no
-/*  +++Canvas.js     April 8, 2023
+/*  +++Canvas.js     June 26, 2023
 		Copyright © 2023 Joe Golembieski, SoftMoon Webware
 
 		This program is a work of fictional imagination.
@@ -53,13 +53,13 @@ CanvasRenderingContext2D.prototype.releasePixelBlock= function()  {
 		delete this.getPixel;  // fall back on the prototype
 		}
 
-CanvasRenderingContext2D.prototype.setPixel5Ch= function($column, $row, $c, $doBlendAlpha=false)  {
+CanvasRenderingContext2D.prototype.setPixel5Ch= function($column, $row, $c, $alphaBlender)  {
 	// note that validity of $column & $row is not checked (for speed) and can result in weirdness...
 	//  c[0] = red
 	//  c[1] = green
 	//  c[2] = blue
-	//  c[3] = pixel-alpha value (after blending in color) or undefined to leave pixel-alpha as-is.
-	//  c[4] = alpha-blend rate (undefined=no color blended;  0=color fully transparent;  255=color fully opaque)
+	//  c[3] = alpha-blend rate (undefined=no color blended;  0=color fully transparent;  255=color fully opaque)
+	//  c[4] = pixel-alpha value (after blending in color) or undefined to leave pixel-alpha as-is.
 	// this.pixels.block.data is an  Uint8ClampedArray
 	//  so values added to/in it are automatically clamped, rounded integers from 0-255
 	//  and therefore colors “in-between” and “outside” the sRGB colorspace are automatically corrected.
@@ -67,20 +67,26 @@ CanvasRenderingContext2D.prototype.setPixel5Ch= function($column, $row, $c, $doB
 	const b=p.block,
 				d=b.data;
 	p=4*(($row-p.top)*b.width + $column-p.right);
-	if ($c[4]===undefined)  {
-		d[p]=$c[0];  d[p+1]=$c[1];  d[p+2]=$c[2];
-		if ($c[3]!==undefined)  d[p+3]=$c[3];  }
+	if ($c[3]===undefined)  {
+		if ($c[0] !== undefined)  d[p]=$c[0];
+		if ($c[1] !== undefined)  d[p+1]=$c[1];
+		if ($c[2] !== undefined)  d[p+2]=$c[2];
+		if ($c[4] !== undefined)  d[p+3]=$c[4];  }
 	else  {
 		//  note that the colors are blended into the canvas at rate(i)
 		//  but the color-TRANSPARENCY is added to the canvas-TRANSPARENCY at rate(i)
-		const i=$c[4]/255;
-		d[p]+=($c[0]-d[p++])*i;
-		d[p]+=($c[1]-d[p++])*i;
-		d[p]+=($c[2]-d[p++])*i;
-		if ($c[3]!==undefined)  {
-			if ($doBlendAlpha)  d[p]-=(1-$c[3])*i;
-			else  d[p]=$c[3];  }  }  }
+		const i=$c[3]/255;
+		if ($c[0] !== undefined)  d[p]+=($c[0]-d[p++])*i;
+		if ($c[1] !== undefined)  d[p]+=($c[1]-d[p++])*i;
+		if ($c[2] !== undefined)  d[p]+=($c[2]-d[p++])*i;
+		if ($c[4] !== undefined)  {
+			if ($alphaBlender)  d[p]=$alphaBlender($c[4], $c[3], d[p]);
+			else  d[p]=$c[4];  }  }  }
 
+// These static functions can be passed into setPixel5Ch as the $alphaBlender
+//  Ap = Alpha to set in the pixel;  Ab = blend rate into existing alpha;  Ac = pre-existing Alpha of the canvas' pixel
+CanvasRenderingContext2D.addOpacity=function(Ap, Ab, Ac) {return Ap + (1-Ap)*Ac*Ab;}
+CanvasRenderingContext2D.subtractTransparency=function(Ap, Ab, Ac) {return  Ap - Ap*(1-Ac)*Ab;}
 
 
 CanvasRenderingContext2D.prototype.line= function(sp, ep, w, style)  {
